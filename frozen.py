@@ -1,19 +1,17 @@
 import gym
 from QLearningAgent import QLearningAgent
 from DynaQAgent import DynaQAgent
-import numpy as np
-import time, pickle, os
 from DeepQLearningAgent import DeepQLearningAgent
-env = gym.make('FrozenLake-v0')
+env = gym.make('FrozenLake8x8-v0')
 env.reset()
 
 # env.reset()
 # env.render()
 epsilon = 0.9
-lr_rate = 0.95
+lr_rate = 0.1
 gamma = 0.96
 step = 6
-total_episodes = 1000
+total_episodes = 10000
 max_steps = 1000
 
 
