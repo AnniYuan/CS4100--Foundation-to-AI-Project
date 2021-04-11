@@ -13,7 +13,7 @@ epsilon = 0.5
 lr_rate = 0.3
 gamma = 0.96
 step = 6
-total_episodes = 1000
+total_episodes = 10000
 max_steps = 1000
 
 qLearning = QLearningAgent(env, epsilon, gamma, lr_rate)
@@ -42,7 +42,7 @@ def train(agent):
         if ep % 10 == 0: print('Episode', ep, 'Takes', t, 'steps', 'score:', s)
         scores.append(s)
         steps.append(t)
-    print('Win: ', win)
+    print('Win rate: ', win/total_episodes)
     return scores, steps
 
 
@@ -63,7 +63,7 @@ def play(agent, numberEpisode=1000):
                 break
         if score >= 1:
             win += 1
-    print('Win: ', win)
+    print('Win rate: ', win/numberEpisode)
 
 
 #

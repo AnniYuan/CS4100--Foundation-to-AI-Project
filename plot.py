@@ -15,8 +15,13 @@ def plot_rwd_by_epd(rewards, epd_range=300):
     plt.show()
 
 
-def plot_steps_by_epd(steps):
-    plt.plot(steps)
+def plot_steps_by_epd(steps, epd_range=300):
+    avg_steps = []
+    index = []
+    for i in range(0, len(steps), epd_range):
+        index.append(i)
+        avg_steps.append(np.mean(steps[i:i + epd_range]))
+    plt.plot(index, avg_steps)
     plt.ylabel('steps')
     plt.xlabel('episodes')
     plt.show()
