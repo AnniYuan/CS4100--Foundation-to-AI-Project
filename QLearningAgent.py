@@ -6,7 +6,7 @@ class QLearningAgent:
         self.gamma = gamma
         self.lr_rate = lr
         self.env = env
-        self.Q = np.zeros((env.observation_space.n, env.action_space.n)) #16x4
+        self.Q = np.zeros((env.observation_space.n, env.action_space.n))
 
     def choose_action(self, state):
         if np.random.uniform(0, 1) < self.epsilon:
@@ -16,10 +16,9 @@ class QLearningAgent:
         return action
 
     def update(self, state, state2, reward, action):
-        predict = self.Q[state, action]
-        target = reward + self.gamma * np.max(self.Q[state2, :])
-        self.Q[state, action] = self.Q[state, action] + self.lr_rate * (target - predict)
-
+        qValue = self.Q[state, action]
+        nqValue = reward + self.gamma * np.max(self.Q[state2, :])
+        self.Q[state, action] = self.Q[state, action] + self.lr_rate * (nqValue - qValue)
 
     def choose_play_action(self,state):
         action = np.argmax(self.Q[state, :])

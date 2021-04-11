@@ -13,19 +13,19 @@ class DynaQAgent:
 
     def update(self, state, state2, reward, action):
         #update Q table
-        predict = self.Q[state, action]
-        target = reward + self.gamma * np.max(self.Q[state2, :])
-        self.Q[state, action] = self.Q[state, action] + self.lr_rate * (target - predict)
+        qValue = self.Q[state, action]
+        nqValue = reward + self.gamma * np.max(self.Q[state2, :])
+        self.Q[state, action] = self.Q[state, action] + self.lr_rate * (nqValue - qValue)
         #update model
         if state not in self.model.keys():
             self.model[state] = {}
         self.model[state][action] = (reward, state2)
         # loop n times to randomly update Q-value
+        # randomly choose an state from model
+        # based on the state randomly choose an action
         for _ in range(self.steps):
-            # randomly choose an state
             idx = np.random.choice(range(len(self.model.keys())))
             rstate = list(self.model)[idx]
-            # randomly choose an action
             idx2 = np.random.choice(range(len(self.model[rstate].keys())))
             raction = list(self.model[rstate])[idx2]
 
