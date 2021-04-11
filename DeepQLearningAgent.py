@@ -23,17 +23,20 @@ class DeepQLearningAgent:
         self.init = tf.global_variables_initializer()
         self.sess.run(self.init)
 
-    def choose_action(self, state):
+    def one_hot(self, state):
         action, qvalues = self.sess.run([self.act, self.out],
                                         feed_dict={self.x: np.identity(self.n_obs)[state:state + 1]})
+        return action, qvalues
+
+    def choose_action(self, state):
+        action, qvalues = self.one_hot(state)
         self.q_predict = qvalues
         if np.random.uniform(0, 1) < self.epsilon:
             action[0] = self.env.action_space.sample()
         return action[0]
 
     def choose_play_action(self, state):
-        action, qvalues = self.sess.run([self.act, self.out],
-                                        feed_dict={self.x: np.identity(self.n_obs)[state:state + 1]})
+        action, qvalues = self.one_hot(state)
         return action[0]
 
     def update(self, state, next_state, reward, action):
