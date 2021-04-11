@@ -13,3 +13,10 @@ def plot_rwd_by_epd(rewards, epd_range=300):
     plt.ylabel('sum reward')
     plt.xlabel('episodes')
     plt.show()
+
+
+def plot_steps_by_epd(steps):
+    plt.plot(steps)
+    plt.ylabel('steps')
+    plt.xlabel('episodes')
+    plt.show()

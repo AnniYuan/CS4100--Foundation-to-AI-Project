@@ -24,6 +24,7 @@ dQ = DeepQLearningAgent(env, epsilon, gamma, lr_rate)
 def train(agent):
     win = 0
     scores = []
+    steps = []
     for ep in range(total_episodes):
         state = env.reset()
         t = 0
@@ -40,8 +41,9 @@ def train(agent):
         if s >= 1: win += 1
         if ep % 10 == 0: print('Episode', ep, 'Takes', t, 'steps', 'score:', s)
         scores.append(s)
+        steps.append(t)
     print('Win: ', win)
-    return scores
+    return scores, steps
 
 
 def play(agent, numberEpisode=1000):
@@ -69,9 +71,10 @@ def play(agent, numberEpisode=1000):
 # play(qLearning,1000)
 # train(dynaq)
 # play(dynaq,1000)
-win = train(dQ)
+win, steps = train(dQ)
 play(dQ, 1000)
 plot.plot_rwd_by_epd(win)
+plot.plot_steps_by_epd(steps)
 #
 # with open("frozenLake_qTable.pkl", 'wb') as f:
 #     pickle.dump(QLearningAgent.Q, f)
