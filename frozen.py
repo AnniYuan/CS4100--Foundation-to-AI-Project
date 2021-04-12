@@ -13,9 +13,8 @@ epsilon = 0.9
 lr_rate = 0.1
 gamma = 0.9
 step = 5
-total_episodes = 1
-max_steps = 1000
-
+max_steps = 5000
+total_episodes = 5000
 
 qLearning = QLearningAgent(env, epsilon, gamma, lr_rate)
 dynaq = DynaQAgent(env, epsilon, gamma, lr_rate, step)
@@ -35,6 +34,8 @@ def train(agent):
             t += 1
             s += reward
             if done:
+                if agent.epsilon > 0.001:
+                    agent.epsilon -= 1.0/total_episodes
                 break
         if s >= 1 : win += 1
         #if ep % 1000 == 0:print('Episode', ep, 'Takes',t ,'steps','score:', s)
@@ -57,11 +58,15 @@ def play(agent, numberEpisode=5000):
                 break
         if score >= 1:
             win += 1
-    print('Play Win: ',win)
+    print('Episodes: ',total_episodes,'Play Win: ',win)
 #
+
+
 #for _ in range(3):
-train(dQ)
-play(dQ)
+while total_episodes <= 10000:
+    train(dynaq)
+    play(dynaq)
+    total_episodes+=5000
 # train(dynaq)
 # play(dynaq,1000)
 #train(dQ)
