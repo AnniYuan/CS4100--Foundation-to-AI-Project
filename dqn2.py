@@ -7,25 +7,22 @@ from Memory import *
 import gym
 import numpy as np
 import time, pickle, os
+import csv
 env = gym.make('FrozenLake8x8-v0')
 env.reset()
 state_size = 1
 action_size = env.action_space.n
 print('action space',env.action_space)
 print('state space',env.observation_space)
-epsilon = 0.9
-lr_rate = 0.1
-gamma = 0.9
-max_steps = 100
 
+max_steps = 100
+EPISODES = 110000
 class DQNAgent:
-    def __init__(self, state_size, action_size, gamma= gamma, epsilon = epsilon, lr_rate = lr_rate):
+    def __init__(self, state_size, action_size, gamma, epsilon, lr_rate):
         self.state_size = state_size
         self.action_size = action_size
         self.gamma = gamma  # discount rate
         self.epsilon = epsilon  # exploration rate
-        self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995
         self.dqn_learning_rate = lr_rate
         self.model = self._build_model()
         self.memory = Memory(1000)  # PER Memory
@@ -48,7 +45,7 @@ class DQNAgent:
         # Save TD-Error into Memory
         self.memory.add(td_error, (state, action, reward, next_state, done))
 
-    def act(self, state):
+    def choose_action(self, state):
         if np.random.rand() <= self.epsilon:  # Exploration
             return random.randrange(self.action_size)
         act_values = self.model.predict(state)
@@ -70,13 +67,22 @@ class DQNAgent:
             target_f[0][action] = target
             # Gradient Update. Pay attention at the sample weight as proposed by the PER Paper
             self.model.fit(state, target_f, epochs=1, verbose=0, sample_weight=np.array([is_weight[i]]))
-        if self.epsilon > 0.001:  # Epsilon Update
-            self.epsilon *= self.epsilon_decay
+            if self.epsilon > 0.001: # Epsilon Update
+                self.epsilon -= 1/EPISODES
 
-agent = DQNAgent(state_size, action_size)
+
+
+epsilon = 0.9
+lr_rate = 0.1
+gamma = 0.9
+step = 5
+max_steps = 100
+agent = DQNAgent(state_size=1,action_size=4,epsilon=epsilon,gamma=gamma,lr_rate=lr_rate)
+
+
 scores=[]
-EPISODES = 21000
-y_axis=[]
+
+my_dict = {}
 def train():
     win = 0
     for e in range(EPISODES):
@@ -85,9 +91,8 @@ def train():
         t = 0
         s = 0
         while t < max_steps:
-            action = agent.act(state)
+            action = agent.choose_action(state)
             next_state, reward, done, _ = env.step(action)
-            #reward = reward if not done else -1
             next_state = np.reshape(next_state, [1, state_size])
             agent.memorize(state, action, reward, next_state, done)
             state = next_state
@@ -95,16 +100,19 @@ def train():
             s += reward
             if done:
                 if s >= 1: win += 1
-                if EPISODES%100:
-                    print("episode: {}/{}, Win: {} ".format(e, EPISODES, win))
                 #print("Beta {:.5f} / Eps: {:.5f}".format(agent.memory.beta, agent.epsilon))
                 break
         if agent.memory.tree.n_entries > 32:
             agent.replay()
-    print(EPISODES,'Episodes, Win:',win)
-    y_axis.append(win)
+        if e%100 == 0:
+            print(e,'Episodes, Win:',win)
+        if e%1000 == 0:
+            my_dict[e] = win
 
 
 train()
 
-print(y_axis)
+with open('test.csv', 'w') as f:
+    for key in my_dict.keys():
+        f.write("%s,%s\n"%(key,my_dict[key]))
+#

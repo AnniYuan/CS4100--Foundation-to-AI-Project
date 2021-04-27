@@ -2,45 +2,43 @@ import numpy as np
 
 
 class DynaQAgent:
-    def __init__(self, env, epsilon, gamma, lr,loop):
+    def __init__(self, env, epsilon, gamma, lr, loop):
+        self.env = env
         self.steps = loop
-        self.model = {}
         self.epsilon = epsilon
         self.gamma = gamma
         self.lr_rate = lr
-        self.env = env
-        self.Q = np.zeros((env.observation_space.n, env.action_space.n))  # 16x4
+        self.Q = np.zeros((env.observation_space.n, env.action_space.n))
+        self.transitions = np.zeros((env.observation_space.n, env.action_space.n), dtype=np.uint8)
+        self.rewards = np.zeros((env.observation_space.n, env.action_space.n))
 
-    def update(self, state, state2, reward, action):
-        #update Q table
-        qValue = self.Q[state, action]
-        nqValue = reward + self.gamma * np.max(self.Q[state2, :])
-        self.Q[state, action] = self.Q[state, action] + self.lr_rate * (nqValue - qValue)
-        #update model
-        if state not in self.model.keys():
-            self.model[state] = {}
-        self.model[state][action] = (reward, state2)
-        # loop n times to randomly update Q-value
-        # randomly choose an state from model
-        # based on the state randomly choose an action
-        for _ in range(self.steps):
-            idx = np.random.choice(range(len(self.model.keys())))
-            rstate = list(self.model)[idx]
-            idx2 = np.random.choice(range(len(self.model[rstate].keys())))
-            raction = list(self.model[rstate])[idx2]
-
-            rreward, r_next_State = self.model[rstate][raction]
-
-            self.Q[rstate,raction] += self.lr_rate * (
-                        rreward + self.gamma * np.max(self.Q[r_next_State, :]) - self.Q[rstate,raction])
+    def sample(self, env):
+        # Random state
+        if all(np.sum(self.transitions, axis=1)) <= 0:
+            state = np.random.randint(env.observation_space.n)
+        else:
+            state = np.random.choice(np.where(np.sum(self.transitions, axis=1) > 0)[0])
+        # Random action
+        if all(self.transitions[state]) <= 0:
+            action = np.random.randint(env.action_space.n)
+        else:
+            action = np.random.choice(np.where(self.transitions[state] > 0)[0])
+        return state, action
 
     def choose_action(self, state):
-            if np.random.uniform(0, 1) < self.epsilon:
-                action = self.env.action_space.sample()
-            else:
-                action = np.argmax(self.Q[state, :])
-            return action
+        if np.random.uniform(0, 1) < self.epsilon:
+            return self.env.action_space.sample()
+        else:
+            return np.argmax(self.Q[state, :])
 
-    def choose_play_action(self, state):
-        action = np.argmax(self.Q[state, :])
-        return action
+    def update(self, state, state2, reward, action):
+        target = reward + self.gamma * np.max(self.Q[state2, :])
+        self.Q[state, action] = (1 - self.lr_rate) * self.Q[state, action] + self.lr_rate * target
+        self.transitions[state, action] = state2
+        self.rewards[state, action] = reward
+        for i in range(self.steps):
+            state, action = self.sample(self.env)
+            state2 = self.transitions[state, action]
+            reward = self.rewards[state, action]
+            target = reward+self.gamma*np.max(self.Q[state2, :])
+            self.Q[state, action] = (1 - self.lr_rate) * self.Q[state, action] + self.lr_rate * target

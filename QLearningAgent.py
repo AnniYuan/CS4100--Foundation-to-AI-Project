@@ -19,7 +19,3 @@ class QLearningAgent:
         qValue = self.Q[state, action]
         nqValue = reward + self.gamma * np.max(self.Q[state2, :])
         self.Q[state, action] = self.Q[state, action] + self.lr_rate * (nqValue - qValue)
-
-    def choose_play_action(self,state):
-        action = np.argmax(self.Q[state, :])
-        return action
